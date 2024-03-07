@@ -1,0 +1,36 @@
+import cv2
+import numpy as np
+from google.colab.patches import cv2_imshow
+
+# Load the image
+image = cv2.imread("/content/drive/MyDrive/bea.jpg")
+
+# Load the maang tikka overlay with transparency
+maang_tikka = cv2.imread("/content/dove1.png", cv2.IMREAD_UNCHANGED)
+
+# Define the forehead region coordinates (you can adjust these based on your requirements)
+forehead_x = 250
+forehead_y = 200
+forehead_width = 220
+forehead_height = 220
+
+# Extract the forehead region from the image
+forehead = image[forehead_y:forehead_y+forehead_height, forehead_x:forehead_x+forehead_width]
+
+# Resize the maang tikka overlay to match the size of the forehead region
+maang_tikka_resized = cv2.resize(maang_tikka, (forehead_width, forehead_height))
+
+# Create a mask for the transparent region of the maang tikka overlay
+maang_tikka_mask = maang_tikka_resized[:, :, 3] / 255.0
+
+# Expand dimensions of the mask to match the number of channels in the forehead region
+maang_tikka_mask = np.expand_dims(maang_tikka_mask, axis=2)
+
+# Apply the overlay to the forehead region using the mask
+forehead_with_maang_tikka = forehead * (1 - maang_tikka_mask) + maang_tikka_resized[:, :, :3] * maang_tikka_mask
+
+# Replace the original forehead region in the image with the forehead region with maang tikka
+image[forehead_y:forehead_y+forehead_height, forehead_x:forehead_x+forehead_width] = forehead_with_maang_tikka
+
+# Display the resulting image
+cv2_imshow(image)
